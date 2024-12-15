@@ -4,52 +4,85 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
     <div id="mainPage" class="page">
-        <div class="game-container" style="position: relative;">
+        <div class="game-container" style="display: flex; flex-direction: column; height: 100%; position: relative;">
 
-            <img src="images/map.png" alt="Background Map" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -5; opacity: 0.5;">
+            <div style="display: flex; justify-content: space-between; padding: 50px;">
+
+                <!-- 相簿1按鈕 -->
+                    <div id="openAlbumButton1" style="cursor: pointer;">
+                        <img src="images/Bar/cover.jpg" alt="相簿1" style="width: 100px; height: 100px; object-fit: contain; background-color: white;" />
+                    </div>
+                
+                    <!-- 相簿2按鈕 -->
+                    <div id="openAlbumButton2" style="cursor: pointer;">
+                        <img src="images/leaf/_1.JPG" alt="相簿2" style="width: 100px; height: 100px; object-fit: contain; background-color: white;"/>
+                    </div>
+    
+                    <div id="openAlbumButton3" style="cursor: pointer;">
+                        <img src="images/載運/cover.JPG" alt="相簿3" style="width: 100px; height: 100px; object-fit: contain; background-color: white;"/>
+                    </div>
+                </div>
         
             <!-- SVG路徑 -->
-            <svg width="1000" height="600" id="gameMap" style="position: relative;">
+            <svg id="gameMap" style="position: absolute;">
                 <!-- 更加不規則且虛線的路徑 -->
-                <path id="path" d="M50 300 C 150 200, 250 400, 350 300 S 500 150, 600 300 S 800 450, 950 300" 
+                <path id="path" d="M50 200 C 150 100, 250 300, 350 200 S 500 100, 600 200 S 800 320, 950 150" 
                     stroke="black" fill="transparent" stroke-width="5" stroke-dasharray="10,10"/>
             
                 <image id="level1Image" xlink:href="images/DSC_8571.JPG" width="50" height="50" x="45" y="260" style="clip-path: circle(50%);"/>
-                <image id="level2Image" xlink:href="images/DSC_8594.JPG" width="50" height="50" x="300" y="160" style="clip-path: circle(50%);"/>
-                <image id="level3Image" xlink:href="images/DSC_8597.JPG" width="50" height="50" x="550" y="340" style="clip-path: circle(50%);"/>
+                <image id="level2Image" xlink:href="images/25載耶/P.JPG" width="50" height="50" x="300" y="160" style="clip-path: circle(50%);"/>
+                <image id="level3Image" xlink:href="images/25交接/G_.jpg" width="50" height="50" x="550" y="340" style="clip-path: circle(50%);"/>
+                <image id="level4Image" xlink:href="images/26載營/cover.JPG" width="50" height="50" x="45" y="260" style="clip-path: circle(50%);"/>
+                <image id="level5Image" xlink:href="images/26載耶/P13.JPG" width="50" height="50" x="550" y="340" style="clip-path: circle(50%);"/>
+                <image id="level6Image" xlink:href="images/24小畢典/A1.jpg" width="50" height="50" x="45" y="260" style="clip-path: circle(50%);"/>
                 
                 <!-- 角色 -->
                 <image id="character" xlink:href="images/character.png" width="40" height="40" x="50" y="280" style="transition: transform 0.3s ease;"/>
                         
             </svg>
+
+            
+            <!-- 小相簿模態視窗 -->
+            <div id="albumModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); justify-content: center; align-items: center;">
+                <div class="album-content" style="position: relative; background: white; padding: 20px; max-width: 500px; max-height: 500px; text-align: center;">
+                    <img id="albumImage" src="" style="max-width: 100%; max-height: 400px;" />
+                    
+                    <p id="photoProvider">小組照片提供: 田棋文</p>
     
-            <div class="button-container" style="display: flex; justify-content: center; gap: 20px; position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);">
+                    <div style="margin-top: 10px;">
+                        <button id="prevPhotoBtn">上一張</button>
+                        <button id="nextPhotoBtn">下一張</button>
+                    </div>
+                    <button id="closeAlbumBtn" style="position: absolute; top: 10px; right: 10px;">關閉</button>
+                </div>
+            </div>
+    
+            <div class="button-container" style="display: flex; justify-content: center; gap: 20px; position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);">
                 <button id="prevLevelBtn" class="game-btn">Previous Level</button>
                 <button id="enterLevelBtn" class="game-btn">Enter Level</button>
                 <button id="nextLevelBtn" class="game-btn">Next Level</button>
             </div>
-            <!-- 新增 "打開相簿" 按鈕 -->
-        <button id="openAlbumBtn" style="position: absolute; top: 20px; right: 20px;">打開相簿</button>
+            <div class="info-box">
+                1.這是屬於25的載物小記<br>
+                2.圖片載入稍慢，按下一張後請稍等<br>
+                3.上方相簿可點案查看，進入關卡後使用鍵盤移動<br>
+                4.不喜歡自己出現在相簿請私訊撤圖
+            </div>            
 
-        <!-- 小相簿模態視窗 -->
-        <div id="albumModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); justify-content: center; align-items: center;">
-            <div class="album-content" style="position: relative; background: white; padding: 20px; max-width: 500px; max-height: 500px; text-align: center;">
-                <img id="albumImage" src="images/DSC_8597.JPG" style="max-width: 100%; max-height: 400px;"/>
-                
-                <div style="margin-top: 10px;">
-                    <button id="prevPhotoBtn">上一張</button>
-                    <button id="nextPhotoBtn">下一張</button>
-                </div>
-                <button id="closeAlbumBtn" style="position: absolute; top: 10px; right: 10px;">關閉</button>
+
+            <div id="triangleButtonContainer">
+                <button id="triangleButton">導師們</button>
             </div>
-        </div>
-        </div>
-    </div>
-    
+            <div id="triangleImages">
+                <img src="images/teac1.jpg" alt="圖片1" class="triangle-img" id="img1">
+                <img src="images/teac2.jpg" alt="圖片2" class="triangle-img" id="img2">
+                <img src="images/tech3.jpg" alt="圖片3" class="triangle-img" id="img3">
+            </div>
+            
     <div id="levelPage" class="page" style="display: none;">
         <!-- Character in the level，使用相對路徑 -->
         <img id="levelCharacter" src="../images/character.png" alt="Character" style="display: none; position: absolute; width: 40px; height: 40px;" />
@@ -58,31 +91,6 @@
     </div>
     
     <!-- 引用 main.js 模組 -->
-    <script type="module" src="script_2.js"></script>
-
-    <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-analytics.js";
-        // TODO: Add SDKs for Firebase products that you want to use
-        // https://firebase.google.com/docs/web/setup#available-libraries
-      
-        // Your web app's Firebase configuration
-        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-        const firebaseConfig = {
-          apiKey: "AIzaSyA1tH3_Ol7gjZuJ0cEBPpaHBcc2dvURcRA",
-          authDomain: "rweb4003.firebaseapp.com",
-          databaseURL: "https://rweb4003-default-rtdb.asia-southeast1.firebasedatabase.app",
-          projectId: "rweb4003",
-          storageBucket: "rweb4003.appspot.com",
-          messagingSenderId: "966829493933",
-          appId: "1:966829493933:web:0a743b893257ba34e78024",
-          measurementId: "G-8M577L8MFB"
-        };
-      
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-      </script>
+    <script type="module" src="script_3.js"></script>
 </body>
 </html>

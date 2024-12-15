@@ -8,9 +8,9 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=LXGW+WenKai+Mono+TC&display=swap');
     </style>
-    <h1 class="page-title">25載耶</h1>
+    <h1 class="page-title">載物小畢典</h1>
 </head>
-<body class="level-2-bg">
+<body class="level-6-bg">
     <div class="corner-image"></div>
 
     <!-- 創建角色 -->
@@ -18,7 +18,7 @@
 
     <button id="backToMainBtn">返回主頁</button>
 
-    <p class="corner-text">活動照片：田棋文</p>
+    <p class="corner-text">照片是24的，25明年上線</p>
 
     <!-- 小相簿模態視窗 -->
         <div id="albumModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); justify-content: center; align-items: center;">
@@ -48,9 +48,7 @@
 
     const levelConfig2 = {
     missions: [
-        { point: { x: 350, y: 150 }, albumKey: 'D', imageUrl: 'images/25載耶/D1.JPG', touch:0 },
-        { point: { x: 200, y: 400 }, albumKey: 'G', imageUrl: 'images/25載耶/G12.JPG', touch:0 },
-        { point: { x: 1000, y: 200 }, albumKey: 'P', imageUrl: 'images/25載耶/P1.JPG', touch:0 },
+        { point: { x: 350, y: 200 }, albumKey: 'D', imageUrl: 'images/24小畢典/A1.jpg', touch:0 },
     ]
     };
 
@@ -122,77 +120,41 @@ function createMissionPoint(levelConfig2) {
 
         if (distance < 40 && mission.touch === 0) {  // 若距離小於40且未觸發過相簿
             if (albumKey) {
-                console.log("碰撞到任務點，打開相簿");
-                openAlbum(albumKey);
-                mission.touch = 1;  // 將此任務點的 touch 設為 1
+                showImage('images/24小畢典/A1.jpg');
+                mission.touch = 1;  
             }
         } else if (distance > 80 && mission.touch === 1) {  
             console.log("Left mission area");
-            mission.touch = 0;  // 重置此任務點的 touch 狀態
+            mission.touch = 0;  
         }
     });
 }
 
+function showImage(imageUrl) {
+        // 創建 img 元素
+        const img = document.createElement("img");
 
-var currentPhotos = []; // 使用 currentPhotos
+        // 設定圖片的來源與樣式
+        img.src = imageUrl;
+        img.style.position = "fixed"; // 固定位置
+        img.style.top = "50%"; // 垂直置中
+        img.style.left = "50%"; // 水平置中
+        img.style.transform = "translate(-50%, -50%)"; // 讓圖片中心對齊
+        img.style.width = "300px"; // 設定圖片寬度
+        img.style.height = "auto"; // 高度自動調整，保持比例
+        img.style.zIndex = "1000"; // 確保圖片在最前面
+        img.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)"; // 添加陰影效果
+        img.style.borderRadius = "10px"; // 添加圓角
 
-// 打開相簿並定義相簿資料
-function openAlbum(albumKey) {
-    const photoAlbums = {
-        D: ["images/25載耶/D1.JPG", "images/25載耶/D2.JPG", "images/25載耶/D3.JPG"],
-        G: [
-            "images/25載耶/G.JPG", "images/25載耶/G1.JPG", "images/25載耶/G11.JPG",
-            "images/25載耶/G12.JPG", "images/25載耶/G13.JPG", "images/25載耶/G2.JPG",
-            "images/25載耶/G3.JPG", "images/25載耶/G5.JPG", "images/25載耶/G7.JPG",
-            "images/25載耶/G_.JPG", "images/25載耶/G_1.JPG", "images/25載耶/G_10.JPG",
-            "images/25載耶/G_11.JPG", "images/25載耶/G_12.JPG", "images/25載耶/G_13.JPG",
-            "images/25載耶/G_2.JPG", "images/25載耶/G_3.JPG", "images/25載耶/G_7.JPG",
-            "images/25載耶/G_8-2.JPG", "images/25載耶/G_8.JPG", "images/25載耶/G__.JPG"
-        ],
-        P: ["images/25載耶/P.JPG", "images/25載耶/P1.JPG", "images/25載耶/P2.JPG", 
-            "images/25載耶/P3.JPG", "images/25載耶/P4.JPG", "images/25載耶/P5.JPG", 
-            "images/25載耶/P6.JPG", "images/25載耶/P7.JPG", "images/25載耶/P8.JPG", 
-            "images/25載耶/P9.JPG"]
-    };
+        // 添加到頁面
+        document.body.appendChild(img);
 
-    currentPhotos = photoAlbums[albumKey] || [];  // 將相簿設為 currentPhotos
-    if (currentPhotos.length > 0) {
-        currentPhotoIndex = 0;
-        albumImage.src = currentPhotos[currentPhotoIndex];
-        albumModal.style.display = "flex";
+        // 在 3 秒後自動移除圖片
+        setTimeout(() => {
+            img.remove();
+        }, 3000); // 3000 毫秒 = 3 秒
     }
-}
 
-document.addEventListener("DOMContentLoaded", () => {
-    const albumModal = document.getElementById("albumModal");
-    const albumImage = document.getElementById("albumImage");
-    let currentPhotoIndex = 0;
-
-    // 關閉相簿
-    document.getElementById("closeAlbumBtn").addEventListener("click", () => {
-        albumModal.style.display = "none";
-    });
-
-    // 前一張圖片
-    document.getElementById("prevPhotoBtn").addEventListener("click", () => {
-        if (currentPhotoIndex > 0) {
-            currentPhotoIndex--;
-        } else {
-            currentPhotoIndex = currentPhotos.length - 1;
-        }
-        albumImage.src = currentPhotos[currentPhotoIndex];
-    });
-
-    // 下一張圖片
-    document.getElementById("nextPhotoBtn").addEventListener("click", () => {
-        if (currentPhotoIndex < currentPhotos.length - 1) {
-            currentPhotoIndex++;
-        } else {
-            currentPhotoIndex = 0;
-        }
-        albumImage.src = currentPhotos[currentPhotoIndex];
-    });
-});
     </script>
 
     <script>

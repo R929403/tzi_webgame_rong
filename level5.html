@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,95 +5,201 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game</title>
     <link rel="stylesheet" href="../css/style.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=LXGW+WenKai+Mono+TC&display=swap');
+    </style>
+    <h1 class="page-title">26載耶</h1>
 </head>
 <body class="level-5-bg">
-    <script type="module" src="../javascript/script_2.js"></script>
-<script>
+    <div class="corner-image"></div>
 
-const character = document.createElement('img');
-    character.src = '../images/character.png';
-    character.id = 'levelCharacter';
-    character.style.position = 'absolute';
-    character.style.width = '40px';
-    character.style.height = '40px';
-    document.body.appendChild(character);
+    <!-- 創建角色 -->
+    <img id="levelCharacter" src="../images/character.png" alt="Character" style="position: absolute; width: 40px; height: 40px;" />
 
-    const levelBackground = document.createElement('div');
-    levelBackground.classList.add('level-background');
-    levelBackground.style.backgroundColor = 'lightblue';  // 背景顏色或圖片
-    levelBackground.style.position = 'absolute';
-    levelBackground.style.width = '100%';
-    levelBackground.style.height = '100%';
-    document.body.appendChild(levelBackground);
+    <button id="backToMainBtn">返回主頁</button>
 
+    <p class="corner-text">活動照片：田棋文</p>
+
+    <!-- 小相簿模態視窗 -->
+        <div id="albumModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); justify-content: center; align-items: center;">
+            <div class="album-content" style="position: relative; background: white; padding: 20px; max-width: 500px; max-height: 500px; text-align: center;">
+                <img id="albumImage" style="max-width: 100%; max-height: 400px;"/>
+                
+                <div style="margin-top: 10px;">
+                    <button id="prevPhotoBtn">上一張</button>
+                    <button id="nextPhotoBtn">下一張</button>
+                </div>
+                <button id="closeAlbumBtn" style="position: absolute; top: 10px; right: 10px;">關閉</button>
+            </div>
+        </div>
+        
+
+    <script>
+    // 角色初始位置
     let characterX = 100;
     let characterY = 100;
+    let speed = 5;  // 角色移動速度
+    let activeDialogueBox = null;
 
+    // 顯示角色
+    const character = document.getElementById('levelCharacter');
     character.style.left = `${characterX}px`;
     character.style.top = `${characterY}px`;
 
-    // 第一關配置
-const levelConfig1 = {
-    missions: [
-        { point: { x: 100, y: 200 }, type: 'default', message: '你找到了第一關的任務點！' }
-    ],
-    type: 'default'
-};
+    const levelConfig5 = {
+        missions: [
+        { point: { x: 350, y: 150 }, albumKey: 'D', imageUrl: 'images/26載耶/D1.JPG', touch:0 },
+        { point: { x: 200, y: 400 }, albumKey: 'G', imageUrl: 'images/26載耶/G12.JPG', touch:0 },
+        { point: { x: 1000, y: 200 }, albumKey: 'P', imageUrl: 'images/26載耶/P1.JPG', touch:0 },
+    ]
+    };
 
-// 碰撞檢測
-function checkCollisionWithMissions(x, y) {
-    const levelData = levelConfig1;
+    
+    // 創建任務點
+function createMissionPoint(levelConfig5) {
+    levelConfig5.missions.forEach((mission) => {
+        const missionPoint = document.createElement('div');
+        missionPoint.style.position = 'absolute';
+        missionPoint.style.left = `${mission.point.x}px`;
+        missionPoint.style.top = `${mission.point.y}px`;
+        missionPoint.style.width = '40px';
+        missionPoint.style.height = '40px';
+        missionPoint.style.borderRadius = '50%';
+        missionPoint.style.zIndex = '2';
 
-    if (levelData) {
-        levelData.missions.forEach((mission) => {
-            const { point, type } = mission;
-            const distance = Math.sqrt((x - point.x) ** 2 + (y - point.y) ** 2);
+        // 設定背景圖片或默認顏色
+        if (mission.imageUrl) {
+            missionPoint.style.backgroundImage = `url('${mission.imageUrl}')`;
+            missionPoint.style.backgroundSize = 'cover';
+            missionPoint.style.backgroundPosition = 'center';
+        } else {
+            missionPoint.style.backgroundColor = 'red';  // 默認紅色
+        }
 
-            if (distance < 40) {
-                switch (type) {
-                    case 'default':
-                    default:
-                        alert(mission.message || '你碰到了任務點！');
-                        hasCompletedMission = true;  // 預設行為，直接通關
-                        break;
-                }
+        // 設置 albumKey 到 dataset 中以便碰撞檢測中使用
+        missionPoint.dataset.albumKey = mission.albumKey;
+        
+        document.body.appendChild(missionPoint);
+    });
+}
+
+
+    // 顯示第二關的任務點
+    createMissionPoint(levelConfig5);
+
+    // 角色移動
+    function updateCharacterPosition() {
+        character.style.left = `${characterX}px`;
+        character.style.top = `${characterY}px`;
+        checkCollisionWithMissions(characterX, characterY);
+    }
+
+    // 鍵盤事件處理器
+    document.addEventListener('keydown', (event) => {
+        switch (event.key) {
+            case 'ArrowUp':
+                characterY -= speed;
+                break;
+            case 'ArrowDown':
+                characterY += speed;
+                break;
+            case 'ArrowLeft':
+                characterX -= speed;
+                break;
+            case 'ArrowRight':
+                characterX += speed;
+                break;
+        }
+        updateCharacterPosition();  // 每次移動更新角色位置
+    });
+
+    function checkCollisionWithMissions(x, y) {
+    console.log("Check for collision function entered");
+
+    levelConfig5.missions.forEach((mission) => {
+        const { point, albumKey } = mission;  // 從 mission 中取得 albumKey 和座標
+        const distance = Math.sqrt((x - point.x) ** 2 + (y - point.y) ** 2);
+
+        if (distance < 40 && mission.touch === 0) {  // 若距離小於40且未觸發過相簿
+            if (albumKey) {
+                console.log("碰撞到任務點，打開相簿");
+                openAlbum(albumKey);
+                mission.touch = 1;  // 將此任務點的 touch 設為 1
             }
-        });
+        } else if (distance > 80 && mission.touch === 1) {  
+            console.log("Left mission area");
+            mission.touch = 0;  // 重置此任務點的 touch 狀態
+        }
+    });
+}
+
+
+var currentPhotos = []; // 使用 currentPhotos
+
+// 打開相簿並定義相簿資料
+function openAlbum(albumKey) {
+    const photoAlbums = {
+        D: ["images/26載耶/D0.JPG","images/26載耶/D1.JPG", "images/26載耶/D2.JPG",
+            "images/26載耶/D3.JPG","images/26載耶/D4.JPG","images/26載耶/D5.JPG",
+            "images/26載耶/D6.JPG","images/26載耶/D7.JPG","images/26載耶/D8.JPG"],
+        G: [
+            "images/26載耶/G1.JPG","images/26載耶/G3.JPG", "images/26載耶/G12.JPG",
+             "images/26載耶/G5.JPG", "images/26載耶/G6.JPG", "images/26載耶/G7.JPG",
+            "images/26載耶/G8.JPG", "images/26載耶/G10.JPG", "images/26載耶/G14.JPG",
+             "images/26載耶/G15.JPG", "images/26載耶/G16.JPG", "images/26載耶/G17.JPG"
+        ],
+        P: ["images/26載耶/P1.JPG", "images/26載耶/P2.JPG", "images/26載耶/P3.JPG",
+             "images/26載耶/P4.JPG", "images/26載耶/P5.JPG", "images/26載耶/P6.JPG",
+             "images/26載耶/P7.JPG", "images/26載耶/P8.JPG", "images/26載耶/P9.JPG",
+            "images/26載耶/P10.JPG", "images/26載耶/P11.JPG", "images/26載耶/P12.JPG",
+            "images/26載耶/P13.JPG", "images/26載耶/P14.JPG" ]
+    };
+
+    currentPhotos = photoAlbums[albumKey] || [];  // 將相簿設為 currentPhotos
+    if (currentPhotos.length > 0) {
+        currentPhotoIndex = 0;
+        albumImage.src = currentPhotos[currentPhotoIndex];
+        albumModal.style.display = "flex";
     }
 }
 
-</script>
+document.addEventListener("DOMContentLoaded", () => {
+    const albumModal = document.getElementById("albumModal");
+    const albumImage = document.getElementById("albumImage");
+    let currentPhotoIndex = 0;
 
-<button id="backToMainBtn">返回主頁</button>
+    // 關閉相簿
+    document.getElementById("closeAlbumBtn").addEventListener("click", () => {
+        albumModal.style.display = "none";
+    });
 
-<script>
-document.getElementById('backToMainBtn').addEventListener('click', () => {
-    window.location.href = 'index.html'; 
+    // 前一張圖片
+    document.getElementById("prevPhotoBtn").addEventListener("click", () => {
+        if (currentPhotoIndex > 0) {
+            currentPhotoIndex--;
+        } else {
+            currentPhotoIndex = currentPhotos.length - 1;
+        }
+        albumImage.src = currentPhotos[currentPhotoIndex];
+    });
+
+    // 下一張圖片
+    document.getElementById("nextPhotoBtn").addEventListener("click", () => {
+        if (currentPhotoIndex < currentPhotos.length - 1) {
+            currentPhotoIndex++;
+        } else {
+            currentPhotoIndex = 0;
+        }
+        albumImage.src = currentPhotos[currentPhotoIndex];
+    });
 });
-</script>
-<script type="module">
-    // Import the functions you need from the SDKs you need
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-analytics.js";
-    // TODO: Add SDKs for Firebase products that you want to use
-    // https://firebase.google.com/docs/web/setup#available-libraries
-  
-    // Your web app's Firebase configuration
-    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-    const firebaseConfig = {
-      apiKey: "AIzaSyA1tH3_Ol7gjZuJ0cEBPpaHBcc2dvURcRA",
-      authDomain: "rweb4003.firebaseapp.com",
-      databaseURL: "https://rweb4003-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "rweb4003",
-      storageBucket: "rweb4003.appspot.com",
-      messagingSenderId: "966829493933",
-      appId: "1:966829493933:web:0a743b893257ba34e78024",
-      measurementId: "G-8M577L8MFB"
-    };
-  
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-  </script>
+    </script>
+
+    <script>
+    // 返回主頁按鈕
+    document.getElementById('backToMainBtn').addEventListener('click', () => {
+        window.location.href = 'index.html'; 
+    });
+    </script>
 </body>
 </html>

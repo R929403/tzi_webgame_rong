@@ -5,13 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game</title>
     <link rel="stylesheet" href="../css/style.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=LXGW+WenKai+Mono+TC&display=swap');
+    </style>
+    <h1 class="page-title">25交接</h1>
 </head>
 <body class="level-3-bg">
+    <div class="corner-image"></div>
 
     <!-- 創建角色 -->
     <img id="levelCharacter" src="../images/character.png" alt="Character" style="position: absolute; width: 40px; height: 40px;" />
 
     <button id="backToMainBtn">返回主頁</button>
+
+    <p class="corner-text">活動照片：田棋文</p>
 
     <script>
     // 角色初始位置
@@ -25,20 +32,54 @@
     character.style.left = `${characterX}px`;
     character.style.top = `${characterY}px`;
 
-    // 第三關的任務設置，包含選擇題與圖片
+    // 第三關的任務設置
     const levelConfig3 = {
         missions: [
             { 
-                point: { x: 300, y: 150 }, 
+                point: { x: 580, y: 190 }, 
                 type: 'quiz', 
-                question: '這是第三關的問題：哪一個選項是正確的？', 
-                options: ['A', 'B', 'C'],  // 選項
-                correctAnswerIndex: 0,  // A 是正確答案 (index 0)
-                imageUrl: 'url("/images/DSC_8739.JPG")'  // 使用圖片作為任務點背景
+                question: '你是哪家？：', 
+                options: ['1家', '2家', '3家', '5家', '6家', 
+                        '7家', '8家', '9家', '10家', '11家', '12家', '13家'],  
+                ima:'url("/images/25交接/G_.jpg")',
+                touch:0,
+                imageUrls: [ 
+                    'url("/images/25交接/G1.jpg")', 
+                    'url("/images/25交接/G2.jpg")', 
+                    'url("/images/25交接/G3.jpg")', 
+                    'url("/images/25交接/G5.jpg")', 
+                    '', 
+                    'url("/images/25交接/G7.jpg")', 
+                    'url("/images/25交接/G8.jpg")', 
+                    'url("/images/25交接/G9.jpg")', 
+                    'url("/images/25交接/G10.jpg")', 
+                    'url("/images/25交接/G11.jpg")', 
+                    'url("/images/25交接/G12.jpg")',
+                    'url("/images/25交接/G13.jpg")',
+                ]
+            },
+            { 
+                point: { x: 350, y: 100 }, 
+                type: 'image', 
+                ima: 'url("/images/25交接/B1.jpg")' ,
+                touch:0
+            },
+            { 
+                point: { x: 200, y: 450 }, 
+                type: 'image', 
+                ima: 'url("/images/25交接/B2.jpg")' ,
+                touch:0
+            },
+            { 
+                point: { x: 1200, y: 380 }, 
+                type: 'image', 
+                ima: 'url("/images/25交接/B3.jpg")' ,
+                touch:0
             }
         ],
         type: 'quiz-mission'
     };
+
 
     // 碰撞檢測
     function checkCollisionWithMissions(x, y) {
@@ -49,14 +90,25 @@
                 const { point, type } = mission;
                 const distance = Math.sqrt((x - point.x) ** 2 + (y - point.y) ** 2);
 
-                if (distance < 40) {
-                    switch (type) {
+                if (distance < 40 && mission.touch === 0) {
+                    if (activeDialog) {
+                        activeDialog.remove();
+                        activeDialog = null;
+                        }
+                        mission.touch = 1;
+                        switch (type) {
                         case 'quiz':
                             handleQuizMission(mission);
                             break;
+                        case 'image':
+                            displayImage(mission.ima);  // 對於圖片任務點，直接顯示圖片
+                            break;
                         default:
                             break;
-                    }
+                        }
+                    }else if (distance > 80 && mission.touch === 1) {  
+                        console.log("Left mission area");
+                        mission.touch = 0;
                 }
             });
         }
@@ -64,19 +116,21 @@
 
     // 處理選擇題任務
     function handleQuizMission(mission) {
-        showQuizDialog(mission.question, mission.options, mission.correctAnswerIndex, (isCorrect) => {
-            if (isCorrect) {
-                alert('回答正確！你已完成這一關的任務。');
-            } else {
-                alert('回答錯誤，請再試一次！');
-            }
-        });
+        showQuizDialog(mission.question, mission.options, mission.imageUrls);
     }
 
+
+    let activeDialog = null;  // Global variable to keep track of the active dialog
+
     // 顯示選擇題對話框
-    function showQuizDialog(question, options, correctAnswerIndex, callback) {
+    function showQuizDialog(question, options, imageUrls) {
         if (activeDialogueBox) {
             activeDialogueBox.remove();
+        }
+
+        if (activeDialog) {
+            activeDialog.remove();
+            activeDialog = null;
         }
 
         const dialogueBox = document.createElement('div');
@@ -85,7 +139,7 @@
         dialogueBox.style.top = '50%';
         dialogueBox.style.transform = 'translate(-50%, -50%)';
         dialogueBox.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
-        dialogueBox.style.border = '2px solid black';
+        dialogueBox.style.border = '2px';
         dialogueBox.style.padding = '20px';
         dialogueBox.style.zIndex = '1000';
         dialogueBox.style.maxWidth = '300px';
@@ -96,6 +150,19 @@
         questionText.textContent = question;
         dialogueBox.appendChild(questionText);
 
+        // Close button for the quiz dialog
+        const closeButton = document.createElement('button');
+        closeButton.textContent = 'Close';
+        closeButton.style.position = 'absolute';
+        closeButton.style.right = '10px';
+        closeButton.style.top = '10px';
+        closeButton.style.zIndex = '1001';
+        closeButton.onclick = () => {
+            dialogueBox.remove();
+            activeDialog = null;  // Clear the active dialog
+        };
+        dialogueBox.appendChild(closeButton);
+
         // 選項按鈕
         options.forEach((option, index) => {
             const optionButton = document.createElement('button');
@@ -103,10 +170,9 @@
             optionButton.style.display = 'block';
             optionButton.style.margin = '5px auto';
 
-            // 當按下選項按鈕時檢查是否正確
+            // 當按下選項按鈕時顯示對應的圖片
             optionButton.addEventListener('click', () => {
-                const isCorrect = index === correctAnswerIndex;
-                callback(isCorrect);  // 回調檢查答案是否正確
+                displayImage(imageUrls[index]);  // 顯示相應的圖片
                 dialogueBox.remove();
                 activeDialogueBox = null;
             });
@@ -118,6 +184,66 @@
         activeDialogueBox = dialogueBox;
     }
 
+    // 顯示圖片的函數
+    function displayImage(imageUrl) {
+        if (!imageUrl) {
+            alert('沒有圖片');
+            return;
+        }
+
+        if (activeDialog) {
+            activeDialog.remove();
+            activeDialog = null;
+        }
+
+        // Check if imageUrl is provided
+        if (!imageUrl) return;
+
+        // Create dialog box to display the image
+        const imageDialog = document.createElement('div');
+        imageDialog.style.position = 'absolute';
+        imageDialog.style.left = '50%';
+        imageDialog.style.top = '50%';
+        imageDialog.style.transform = 'translate(-50%, -50%)';
+        imageDialog.style.width = '400px';
+        imageDialog.style.height = '300px';
+        imageDialog.style.backgroundImage = imageUrl;
+        imageDialog.style.backgroundSize = 'cover';
+        imageDialog.style.backgroundPosition = 'center';
+        imageDialog.style.border = '2px';
+        imageDialog.style.zIndex = '1000';
+        imageDialog.style.padding = '10px';
+
+        // Create close button
+        const closeButton = document.createElement('button');
+        closeButton.textContent = 'Close';
+        closeButton.style.position = 'absolute';
+        closeButton.style.right = '10px';
+        closeButton.style.top = '10px';
+        closeButton.style.zIndex = '1001';
+        closeButton.onclick = () => {
+            imageDialog.remove();
+            activeDialog = null;  // Clear active dialog when closed
+        };
+
+        // Append close button to the dialog
+        imageDialog.appendChild(closeButton);
+        document.body.appendChild(imageDialog);
+
+        // Set the active dialog
+        activeDialog = imageDialog;
+    }
+
+    function handleQuizMission(mission) {
+    // Close any active dialog before opening a new one
+    if (activeDialog) {
+            activeDialog.remove();
+            activeDialog = null;
+        }
+        showQuizDialog(mission.question, mission.options, mission.imageUrls);
+    }
+
+
     // 創建任務點
     function createMissionPoint(levelConfig) {
         levelConfig.missions.forEach((mission) => {
@@ -126,14 +252,20 @@
             missionPoint.style.position = 'absolute';
             missionPoint.style.left = `${mission.point.x}px`;
             missionPoint.style.top = `${mission.point.y}px`;
-            missionPoint.style.width = '40px';
-            missionPoint.style.height = '40px';
             missionPoint.style.borderRadius = '50%';
             missionPoint.style.zIndex = '2';
+            missionPoint.imageUrl = mission.ima;
 
-            // 使用背景圖片
-            if (mission.imageUrl) {
-                missionPoint.style.backgroundImage = mission.imageUrl;
+            if (mission.type === 'quiz') {
+                missionPoint.style.width = '280px';  // Larger width for quiz mission point
+                missionPoint.style.height = '280px'; // Larger height for quiz mission point
+            } else {
+                missionPoint.style.width = '40px';  // Default width
+                missionPoint.style.height = '40px'; // Default height
+            }
+
+            if (missionPoint.imageUrl) {
+                missionPoint.style.backgroundImage = missionPoint.imageUrl;
                 missionPoint.style.backgroundSize = 'cover';
                 missionPoint.style.backgroundPosition = 'center';
             } else {
@@ -181,29 +313,5 @@
         window.location.href = 'index.html'; 
     });
     </script>
-<script type="module">
-    // Import the functions you need from the SDKs you need
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-analytics.js";
-    // TODO: Add SDKs for Firebase products that you want to use
-    // https://firebase.google.com/docs/web/setup#available-libraries
-  
-    // Your web app's Firebase configuration
-    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-    const firebaseConfig = {
-      apiKey: "AIzaSyA1tH3_Ol7gjZuJ0cEBPpaHBcc2dvURcRA",
-      authDomain: "rweb4003.firebaseapp.com",
-      databaseURL: "https://rweb4003-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "rweb4003",
-      storageBucket: "rweb4003.appspot.com",
-      messagingSenderId: "966829493933",
-      appId: "1:966829493933:web:0a743b893257ba34e78024",
-      measurementId: "G-8M577L8MFB"
-    };
-  
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-  </script>
 </body>
 </html>
