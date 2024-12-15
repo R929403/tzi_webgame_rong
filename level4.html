@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="level-4-bg">
+
+    <!-- 創建角色 -->
+    <img id="levelCharacter" src="../images/character.png" alt="Character" style="position: absolute; width: 40px; height: 40px;" />
+
+    <button id="backToMainBtn">返回主頁</button>
+
+    <script>
+    // 角色初始位置
+    let characterX = 100;
+    let characterY = 100;
+    let speed = 5;  // 角色移動速度
+    let activeDialogueBox = null;
+    let playerPassword = '';  // 存儲玩家獲得的密碼
+
+    // 顯示角色
+    const character = document.getElementById('levelCharacter');
+    character.style.left = `${characterX}px`;
+    character.style.top = `${characterY}px`;
+
+    // 第四關任務設置
+    const levelConfig4 = {
+        missions: [
+            { 
+                point: { x: 100, y: 200 }, 
+                type: 'provide-password', 
+                password: '秘密密碼', 
+                message: '你獲得了通關密語：2025',
+                imageUrl: '/images/DSC_8739.JPG'  // 圖片背景
+            },
+            { 
+                point: { x: 200, y: 300 }, 
+                type: 'input-password', 
+                prompt: '請輸入通關密語：', 
+                correctPassword: '2025',
+                imageUrl: '/images/DSC_8770.JPG'  // 圖片背景
+            },
+            { 
+                point: { x: 300, y: 400 }, 
+                type: 'default', 
+                message: '這是無效的任務點。',
+                imageUrl: '/images/DSC_8412.JPG'  // 圖片背景
+            }
+        ],
+        type: 'custom-mission'
+    };
+
+    // 記錄角色是否已經在任務點附近
+let activeMissions = {};
+
+// 碰撞檢測
+function checkCollisionWithMissions(x, y) {
+    const levelData = levelConfig4;
+
+    if (levelData) {
+        levelData.missions.forEach((mission, index) => {
+            const { point, type } = mission;
+            const distance = Math.sqrt((x - point.x) ** 2 + (y - point.y) ** 2);
+
+            // 如果角色進入了任務點範圍
+            if (distance < 40) {
+                if (!activeMissions[index]) { // 只在第一次進入時觸發
+                    activeMissions[index] = true; // 標記該任務點已經被觸發
+                    switch (type) {
+                        case 'provide-password':
+                            handleProvidePasswordMission(mission);
+                            break;
+                        case 'input-password':
+                            handleInputPasswordMission(mission);
+                            break;
+                        case 'default':
+                        default:
+                            showDialogue(mission.message || '你碰到了任務點！', mission.imageUrl);
+                            break;
+                    }
+                }
+            } else {
+                // 角色離開任務點後，將該任務點的狀態重置
+                activeMissions[index] = false;
+            }
+        });
+    }
+}
+
+    // 處理提供通關密語的任務
+    function handleProvidePasswordMission(mission) {
+        playerPassword = mission.password;
+        showDialogue(mission.message || '你獲得了一條密語！', mission.imageUrl);
+    }
+
+// 處理輸入通關密語的任務
+function handleInputPasswordMission(mission) {
+    const input = prompt(mission.prompt);
+    if (input === mission.correctPassword) { // 只檢查輸入的密碼是否正確
+        showDialogue('密語正確，通關！', mission.imageUrl);
+    } else {
+        showDialogue('密語錯誤，請再試一次！', mission.imageUrl);
+    }
+}
+
+
+    // 創建任務點
+    function createMissionPoint(levelConfig) {
+        levelConfig.missions.forEach((mission, index) => {
+            const missionPoint = document.createElement('div');
+            missionPoint.id = 'missionPoint';
+            missionPoint.style.position = 'absolute';
+            missionPoint.style.left = `${mission.point.x}px`;
+            missionPoint.style.top = `${mission.point.y}px`;
+            missionPoint.style.width = '40px';
+            missionPoint.style.height = '40px';
+            missionPoint.style.borderRadius = '50%';
+            missionPoint.style.zIndex = '2';
+
+            // 使用背景圖片
+            if (mission.imageUrl) {
+                missionPoint.style.backgroundImage = `url('${mission.imageUrl}')`;
+                missionPoint.style.backgroundSize = 'cover';
+                missionPoint.style.backgroundPosition = 'center';
+            } else {
+                missionPoint.style.backgroundColor = 'red';  // 如果沒有圖片，默認紅色
+            }
+
+            document.body.appendChild(missionPoint);
+        });
+    }
+
+    // 顯示任務點
+    createMissionPoint(levelConfig4);
+
+    // 角色移動
+    function updateCharacterPosition() {
+        character.style.left = `${characterX}px`;
+        character.style.top = `${characterY}px`;
+        checkCollisionWithMissions(characterX, characterY);
+    }
+
+    // 鍵盤事件處理器
+    document.addEventListener('keydown', (event) => {
+        event.preventDefault(); // 阻止默認行為
+        switch (event.key) {
+            case 'ArrowUp':
+                characterY -= speed;
+                break;
+            case 'ArrowDown':
+                characterY += speed;
+                break;
+            case 'ArrowLeft':
+                characterX -= speed;
+                break;
+            case 'ArrowRight':
+                characterX += speed;
+                break;
+        }
+        updateCharacterPosition();  // 每次移動更新角色位置
+    });
+
+    // 生成對話框，包含文字和圖片
+    function showDialogue(content, imageSrc) {
+        // 如果已經有對話框，則先關閉它
+        if (activeDialogueBox) {
+            activeDialogueBox.remove();
+        }
+
+        const dialogueBox = document.createElement('div');
+        dialogueBox.style.position = 'absolute';
+        dialogueBox.style.left = '50%';
+        dialogueBox.style.top = '50%';
+        dialogueBox.style.transform = 'translate(-50%, -50%)';
+        dialogueBox.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+        dialogueBox.style.border = '2px solid black';
+        dialogueBox.style.padding = '20px';
+        dialogueBox.style.zIndex = '1000'; // 確保在最前面
+        dialogueBox.style.maxWidth = '300px'; // 控制寬度
+        dialogueBox.style.textAlign = 'center'; // 文字居中
+
+        // 加入文字
+        const text = document.createElement('p');
+        text.textContent = content;
+        dialogueBox.appendChild(text);
+
+        // 加入圖片 (如果提供)
+        if (imageSrc) {
+            const image = document.createElement('img');
+            image.src = imageSrc;
+            image.style.width = '100%';
+            image.style.borderRadius = '10px';
+            dialogueBox.appendChild(image);
+        }
+
+        // 添加關閉按鈕
+        const closeButton = document.createElement('button');
+        closeButton.textContent = 'Close';
+        closeButton.style.marginTop = '10px';
+
+        // 關閉事件
+        closeButton.addEventListener('click', () => {
+            dialogueBox.remove(); // 徹底移除對話框
+            activeDialogueBox = null; // 重置變量
+        });
+
+        dialogueBox.appendChild(closeButton);
+        document.body.appendChild(dialogueBox);
+
+        activeDialogueBox = dialogueBox; // 保存當前對話框
+    }
+
+    </script>
+
+    <script>
+    // 返回主頁按鈕
+    document.getElementById('backToMainBtn').addEventListener('click', () => {
+        window.location.href = 'index.html'; 
+    });
+    </script>
+<script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-analytics.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+  
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyA1tH3_Ol7gjZuJ0cEBPpaHBcc2dvURcRA",
+      authDomain: "rweb4003.firebaseapp.com",
+      databaseURL: "https://rweb4003-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "rweb4003",
+      storageBucket: "rweb4003.appspot.com",
+      messagingSenderId: "966829493933",
+      appId: "1:966829493933:web:0a743b893257ba34e78024",
+      measurementId: "G-8M577L8MFB"
+    };
+  
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+  </script>
+</body>
+</html>

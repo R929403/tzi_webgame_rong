@@ -1,0 +1,100 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="level-5-bg">
+    <script type="module" src="../javascript/script_2.js"></script>
+<script>
+
+const character = document.createElement('img');
+    character.src = '../images/character.png';
+    character.id = 'levelCharacter';
+    character.style.position = 'absolute';
+    character.style.width = '40px';
+    character.style.height = '40px';
+    document.body.appendChild(character);
+
+    const levelBackground = document.createElement('div');
+    levelBackground.classList.add('level-background');
+    levelBackground.style.backgroundColor = 'lightblue';  // 背景顏色或圖片
+    levelBackground.style.position = 'absolute';
+    levelBackground.style.width = '100%';
+    levelBackground.style.height = '100%';
+    document.body.appendChild(levelBackground);
+
+    let characterX = 100;
+    let characterY = 100;
+
+    character.style.left = `${characterX}px`;
+    character.style.top = `${characterY}px`;
+
+    // 第一關配置
+const levelConfig1 = {
+    missions: [
+        { point: { x: 100, y: 200 }, type: 'default', message: '你找到了第一關的任務點！' }
+    ],
+    type: 'default'
+};
+
+// 碰撞檢測
+function checkCollisionWithMissions(x, y) {
+    const levelData = levelConfig1;
+
+    if (levelData) {
+        levelData.missions.forEach((mission) => {
+            const { point, type } = mission;
+            const distance = Math.sqrt((x - point.x) ** 2 + (y - point.y) ** 2);
+
+            if (distance < 40) {
+                switch (type) {
+                    case 'default':
+                    default:
+                        alert(mission.message || '你碰到了任務點！');
+                        hasCompletedMission = true;  // 預設行為，直接通關
+                        break;
+                }
+            }
+        });
+    }
+}
+
+</script>
+
+<button id="backToMainBtn">返回主頁</button>
+
+<script>
+document.getElementById('backToMainBtn').addEventListener('click', () => {
+    window.location.href = 'index.html'; 
+});
+</script>
+<script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-analytics.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+  
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyA1tH3_Ol7gjZuJ0cEBPpaHBcc2dvURcRA",
+      authDomain: "rweb4003.firebaseapp.com",
+      databaseURL: "https://rweb4003-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "rweb4003",
+      storageBucket: "rweb4003.appspot.com",
+      messagingSenderId: "966829493933",
+      appId: "1:966829493933:web:0a743b893257ba34e78024",
+      measurementId: "G-8M577L8MFB"
+    };
+  
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+  </script>
+</body>
+</html>

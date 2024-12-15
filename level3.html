@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="level-3-bg">
+
+    <!-- 創建角色 -->
+    <img id="levelCharacter" src="../images/character.png" alt="Character" style="position: absolute; width: 40px; height: 40px;" />
+
+    <button id="backToMainBtn">返回主頁</button>
+
+    <script>
+    // 角色初始位置
+    let characterX = 100;
+    let characterY = 100;
+    let speed = 5;  // 角色移動速度
+    let activeDialogueBox = null;
+
+    // 顯示角色
+    const character = document.getElementById('levelCharacter');
+    character.style.left = `${characterX}px`;
+    character.style.top = `${characterY}px`;
+
+    // 第三關的任務設置，包含選擇題與圖片
+    const levelConfig3 = {
+        missions: [
+            { 
+                point: { x: 300, y: 150 }, 
+                type: 'quiz', 
+                question: '這是第三關的問題：哪一個選項是正確的？', 
+                options: ['A', 'B', 'C'],  // 選項
+                correctAnswerIndex: 0,  // A 是正確答案 (index 0)
+                imageUrl: 'url("/images/DSC_8739.JPG")'  // 使用圖片作為任務點背景
+            }
+        ],
+        type: 'quiz-mission'
+    };
+
+    // 碰撞檢測
+    function checkCollisionWithMissions(x, y) {
+        const levelData = levelConfig3;
+
+        if (levelData) {
+            levelData.missions.forEach((mission) => {
+                const { point, type } = mission;
+                const distance = Math.sqrt((x - point.x) ** 2 + (y - point.y) ** 2);
+
+                if (distance < 40) {
+                    switch (type) {
+                        case 'quiz':
+                            handleQuizMission(mission);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            });
+        }
+    }
+
+    // 處理選擇題任務
+    function handleQuizMission(mission) {
+        showQuizDialog(mission.question, mission.options, mission.correctAnswerIndex, (isCorrect) => {
+            if (isCorrect) {
+                alert('回答正確！你已完成這一關的任務。');
+            } else {
+                alert('回答錯誤，請再試一次！');
+            }
+        });
+    }
+
+    // 顯示選擇題對話框
+    function showQuizDialog(question, options, correctAnswerIndex, callback) {
+        if (activeDialogueBox) {
+            activeDialogueBox.remove();
+        }
+
+        const dialogueBox = document.createElement('div');
+        dialogueBox.style.position = 'absolute';
+        dialogueBox.style.left = '50%';
+        dialogueBox.style.top = '50%';
+        dialogueBox.style.transform = 'translate(-50%, -50%)';
+        dialogueBox.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+        dialogueBox.style.border = '2px solid black';
+        dialogueBox.style.padding = '20px';
+        dialogueBox.style.zIndex = '1000';
+        dialogueBox.style.maxWidth = '300px';
+        dialogueBox.style.textAlign = 'center';
+
+        // 問題文字
+        const questionText = document.createElement('p');
+        questionText.textContent = question;
+        dialogueBox.appendChild(questionText);
+
+        // 選項按鈕
+        options.forEach((option, index) => {
+            const optionButton = document.createElement('button');
+            optionButton.textContent = option;
+            optionButton.style.display = 'block';
+            optionButton.style.margin = '5px auto';
+
+            // 當按下選項按鈕時檢查是否正確
+            optionButton.addEventListener('click', () => {
+                const isCorrect = index === correctAnswerIndex;
+                callback(isCorrect);  // 回調檢查答案是否正確
+                dialogueBox.remove();
+                activeDialogueBox = null;
+            });
+
+            dialogueBox.appendChild(optionButton);
+        });
+
+        document.body.appendChild(dialogueBox);
+        activeDialogueBox = dialogueBox;
+    }
+
+    // 創建任務點
+    function createMissionPoint(levelConfig) {
+        levelConfig.missions.forEach((mission) => {
+            const missionPoint = document.createElement('div');
+            missionPoint.id = 'missionPoint';
+            missionPoint.style.position = 'absolute';
+            missionPoint.style.left = `${mission.point.x}px`;
+            missionPoint.style.top = `${mission.point.y}px`;
+            missionPoint.style.width = '40px';
+            missionPoint.style.height = '40px';
+            missionPoint.style.borderRadius = '50%';
+            missionPoint.style.zIndex = '2';
+
+            // 使用背景圖片
+            if (mission.imageUrl) {
+                missionPoint.style.backgroundImage = mission.imageUrl;
+                missionPoint.style.backgroundSize = 'cover';
+                missionPoint.style.backgroundPosition = 'center';
+            } else {
+                missionPoint.style.backgroundColor = 'red';  // 默認紅色背景
+            }
+
+            document.body.appendChild(missionPoint);
+        });
+    }
+
+    // 顯示任務點
+    createMissionPoint(levelConfig3);
+
+    // 角色移動
+    function updateCharacterPosition() {
+        character.style.left = `${characterX}px`;
+        character.style.top = `${characterY}px`;
+        checkCollisionWithMissions(characterX, characterY);
+    }
+
+    // 鍵盤事件處理器
+    document.addEventListener('keydown', (event) => {
+        switch (event.key) {
+            case 'ArrowUp':
+                characterY -= speed;
+                break;
+            case 'ArrowDown':
+                characterY += speed;
+                break;
+            case 'ArrowLeft':
+                characterX -= speed;
+                break;
+            case 'ArrowRight':
+                characterX += speed;
+                break;
+        }
+        updateCharacterPosition();  // 每次移動更新角色位置
+    });
+
+    </script>
+
+    <script>
+    // 返回主頁按鈕
+    document.getElementById('backToMainBtn').addEventListener('click', () => {
+        window.location.href = 'index.html'; 
+    });
+    </script>
+<script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-analytics.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+  
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyA1tH3_Ol7gjZuJ0cEBPpaHBcc2dvURcRA",
+      authDomain: "rweb4003.firebaseapp.com",
+      databaseURL: "https://rweb4003-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "rweb4003",
+      storageBucket: "rweb4003.appspot.com",
+      messagingSenderId: "966829493933",
+      appId: "1:966829493933:web:0a743b893257ba34e78024",
+      measurementId: "G-8M577L8MFB"
+    };
+  
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+  </script>
+</body>
+</html>
